@@ -5,7 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Upload, Link, FileText } from "lucide-react";
+import { Loader2, Upload, Link, FileText, Sparkles } from "lucide-react";
+import { DebateGeminiService } from '@/services/geminiService';
 
 interface DebateFeatureProps {
   title: string;
@@ -14,6 +15,7 @@ interface DebateFeatureProps {
   systemPrompt: string;
   icon: React.ReactNode;
   inputType?: 'text' | 'file' | 'url';
+  featureId: string;
 }
 
 export const DebateFeature: React.FC<DebateFeatureProps> = ({
@@ -22,7 +24,8 @@ export const DebateFeature: React.FC<DebateFeatureProps> = ({
   placeholder,
   systemPrompt,
   icon,
-  inputType = 'text'
+  inputType = 'text',
+  featureId
 }) => {
   const [input, setInput] = useState('');
   const [result, setResult] = useState('');
@@ -41,17 +44,50 @@ export const DebateFeature: React.FC<DebateFeatureProps> = ({
 
     setLoading(true);
     try {
-      // Simulate API call - replace with actual API integration
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      let response;
       
-      const mockResponse = `AI Response for ${title}:\n\nBased on your input: "${input}"\n\n${systemPrompt}\n\nThis is a mock response. In the actual implementation, this would connect to your chosen AI API (OpenAI or Google) to provide real debate assistance.`;
-      
-      setResult(mockResponse);
-      toast({
-        title: "Analysis Complete",
-        description: `${title} has been processed successfully.`,
-      });
+      // Call specific Gemini API function based on feature
+      switch (featureId) {
+        case 'rebuttal':
+          response = await DebateGeminiService.generateRebuttal(input);
+          break;
+        case 'cardcutter':
+          response = await DebateGeminiService.cutCards(input);
+          break;
+        case 'extemp':
+          response = await DebateGeminiService.prepareExtemp(input);
+          break;
+        case 'wordchoice':
+          response = await DebateGeminiService.optimizeForLay(input);
+          break;
+        case 'speechanalysis':
+          response = await DebateGeminiService.analyzeSpeech(input);
+          break;
+        case 'processflow':
+          response = await DebateGeminiService.analyzeProcessFlow(input);
+          break;
+        case 'storage':
+          response = await DebateGeminiService.organizeStorage(input);
+          break;
+        default:
+          response = await DebateGeminiService.generateDebateResponse({
+            userInput: input,
+            systemPrompt,
+            feature: title
+          });
+      }
+
+      if (response.success && response.result) {
+        setResult(response.result);
+        toast({
+          title: "✨ AI Analysis Complete",
+          description: `${title} generated successfully using Gemini 2.0 Flash!`,
+        });
+      } else {
+        throw new Error(response.error || 'Failed to generate response');
+      }
     } catch (error) {
+      console.error('Error calling Gemini API:', error);
       toast({
         title: "Error",
         description: "Failed to process your request. Please try again.",
@@ -143,16 +179,17 @@ export const DebateFeature: React.FC<DebateFeatureProps> = ({
           disabled={loading}
           className="w-full"
           size="lg"
+          variant="hero"
         >
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
+              Processing with Gemini AI...
             </>
           ) : (
             <>
-              <FileText className="mr-2 h-4 w-4" />
-              Generate {title}
+              <Sparkles className="mr-2 h-4 w-4" />
+              Generate with Gemini 2.0 Flash
             </>
           )}
         </Button>

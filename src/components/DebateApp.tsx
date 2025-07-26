@@ -11,7 +11,8 @@ import {
   BarChart3, 
   Workflow,
   Trophy,
-  Settings
+  Settings,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -98,6 +99,10 @@ export const DebateApp: React.FC = () => {
             </span>
           </div>
           <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-accent text-accent-foreground text-sm">
+              <Sparkles className="h-3 w-3" />
+              Powered by Gemini 2.0 Flash
+            </div>
             <Button variant="ghost" size="sm">
               <Settings className="h-4 w-4 mr-2" />
               Settings
@@ -146,6 +151,7 @@ export const DebateApp: React.FC = () => {
                   systemPrompt={feature.systemPrompt}
                   icon={feature.icon}
                   inputType={feature.inputType}
+                  featureId={feature.id}
                 />
               </Card>
             </TabsContent>
